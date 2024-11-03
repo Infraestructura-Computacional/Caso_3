@@ -18,9 +18,9 @@ public class Main {
           } else if (opcion == 2) {
                try {
                     // mainInstance.ejecutar(1,32);
-                    mainInstance.ejecutar(4, 1);
+                    // mainInstance.ejecutar(4, 1);
                     // mainInstance.ejecutar(8,1);
-                    // mainInstance.ejecutar(32,1);
+                    mainInstance.ejecutar(32,1);
                } catch (IOException e) {
                     e.printStackTrace();
                }
@@ -40,30 +40,34 @@ public class Main {
      public void ejecutar(int numClientes, int peticionesPorCliente) throws IOException {
           // Ejecutar el servidor en un hilo separado
           Thread servidorThread = new Thread(() -> {
-              try {
-                  Servidor.main(null);
-              } catch (IOException e) {
-                  e.printStackTrace();
-              }
+               try {
+                    Servidor.main(null);
+               } catch (IOException e) {
+                    e.printStackTrace();
+               }
           });
           servidorThread.start(); // Iniciar el hilo del servidor
-      
-          // Esperar un momento para asegurarse de que el servidor esté listo antes de iniciar los clientes
-          try {
-              Thread.sleep(3000); // Aumenta el tiempo de espera si es necesario
-          } catch (InterruptedException e) {
-              e.printStackTrace();
-          }
-      
+
+          // Esperar un momento para asegurarse de que el servidor esté listo antes de
+          // iniciar los clientes
+          // try {
+          // Thread.sleep(50); // Aumenta el tiempo de espera si es necesario
+          // } catch (InterruptedException e) {
+          // e.printStackTrace();
+          // }
+
           // Ejecutar los clientes de forma secuencial con pausa adicional
           for (int i = 0; i < numClientes; i++) {
-              try {
-                  Cliente.main(null);
-                  Thread.sleep(2000); // Espera más tiempo entre conexiones de clientes
-              } catch (IOException | InterruptedException e) {
-                  e.printStackTrace();
-              }
+               try {
+                    Cliente.main(null);
+                    //Thread.sleep(50); // Espera más tiempo entre conexiones de clientes
+               } catch (IOException e) {
+                    e.printStackTrace();
+               } 
+               // catch (InterruptedException e) {
+               //      e.printStackTrace();
+               // }
           }
-      }
-            
+     }
+
 }
