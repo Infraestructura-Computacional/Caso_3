@@ -13,6 +13,7 @@ public class Main {
           
           if (opcion == 1) {
               mainInstance.generarLlaves(); // Llamar a través de la instancia
+              System.out.println("Llaves generadas correctamente.");
           } else if (opcion == 2) {
               mainInstance.ejecutar(); // Llamar a través de la instancia
           } else {
