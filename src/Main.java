@@ -1,14 +1,12 @@
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import client.Cliente;
 import server.Servidor;
 
 public class Main {
-
-     public static String rutaLlavePrivada = "src/server/K_w-.txt";
-     public static String rutaLlavePublica = "src/server/K_w+.txt";
-     public static void main(String[] args) {
+     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
           Scanner scanner = new Scanner(System.in);
           Main mainInstance = new Main();
 
@@ -19,7 +17,8 @@ public class Main {
           int opcion = scanner.nextInt();
 
           if (opcion == 1) {
-               mainInstance.generarLlaves();
+              mainInstance.generarLlaves(); // Llamar a través de la instancia
+              System.out.println("Llaves generadas correctamente.");
           } else if (opcion == 2) {
                try {
                     // mainInstance.ejecutar(1,"32");
@@ -37,11 +36,6 @@ public class Main {
           }
 
           scanner.close();
-     }
-
-     // TODO
-     public void generarLlaves() {
-
      }
 
      // TODO
@@ -76,5 +70,9 @@ public class Main {
                // }
           }
      }
+    //TODO
+    public void generarLlaves() throws NoSuchAlgorithmException, IOException{
+        Llaves.RSA.guardarLlaves();
+    }
 
 }
