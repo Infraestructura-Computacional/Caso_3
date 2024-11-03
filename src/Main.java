@@ -1,11 +1,17 @@
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Base64;
 import java.util.Scanner;
 
 import client.Cliente;
 import server.Servidor;
 
 public class Main {
+     public static String rutaLlavePrivada = "src/server/K_w-.txt";
+     public static String rutaLlavePublica = "src/K_w+.txt";
+
      public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
           Scanner scanner = new Scanner(System.in);
           Main mainInstance = new Main();
@@ -17,16 +23,16 @@ public class Main {
           int opcion = scanner.nextInt();
 
           if (opcion == 1) {
-              mainInstance.generarLlaves(); // Llamar a través de la instancia
-              System.out.println("Llaves generadas correctamente.");
+               mainInstance.generarLlaves(); // Llamar a través de la instancia
+               System.out.println("Llaves generadas correctamente.");
           } else if (opcion == 2) {
                try {
-                    // mainInstance.ejecutar(1,"32");
-                    mainInstance.ejecutar(1, "1");
-                    // mainInstance.ejecutar(4, "1");
-                    // mainInstance.ejecutar(8,"1");
-                    // mainInstance.ejecutar(32,"1");
-               } catch (IOException e) {
+                    // mainInstance.ejecutar(1,32);
+                    // mainInstance.ejecutar(1, 1);
+                    // mainInstance.ejecutar(4,1);
+                    // mainInstance.ejecutar(8,1);
+                    mainInstance.ejecutar(32,1);
+               } catch (Exception e) {
                     e.printStackTrace();
                }
           } else if (opcion == 3) {
@@ -39,10 +45,18 @@ public class Main {
      }
 
      // TODO
-     public void ejecutar(int numClientes, String peticionesPorCliente) throws IOException {
+     public void ejecutar(int numClientes, int peticionesPorCliente) throws Exception {
+          PrivateKey privateKey = Llaves.RSA.leerClavePrivada(rutaLlavePrivada);
+          PublicKey publicKey = Llaves.RSA.leerClavePublica(rutaLlavePublica);
+         
+          // String privateKeyBase64 = Base64.getEncoder().encodeToString(privateKey.getEncoded());
+          // String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+          // System.out.println("Clave Privada (Base64): " + privateKeyBase64);
+          // System.out.println("Clave Pública (Base64): " + publicKeyBase64);
+
           Thread servidorThread = new Thread(() -> {
                try {
-                    Servidor.main(null);
+                    Servidor.runServer(null);
                } catch (IOException e) {
                     e.printStackTrace();
                }
@@ -58,21 +72,22 @@ public class Main {
           // }
 
           for (int i = 0; i < numClientes; i++) {
-               try {
-                    String[] args = {peticionesPorCliente};
-                    Cliente.main(args);
-                    // Thread.sleep(50);
-               } catch (IOException e) {
-                    e.printStackTrace();
-               }
+               Thread clienteThread = new Thread(() -> {
+                    try {
+                        Cliente.runClient(peticionesPorCliente);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
                // catch (InterruptedException e) {
                // e.printStackTrace();
                // }
+               clienteThread.start();
           }
      }
-    //TODO
-    public void generarLlaves() throws NoSuchAlgorithmException, IOException{
-        Llaves.RSA.guardarLlaves();
-    }
+
+     public void generarLlaves() throws NoSuchAlgorithmException, IOException {
+          Llaves.RSA.guardarLlaves(rutaLlavePrivada, rutaLlavePublica);
+     }
 
 }

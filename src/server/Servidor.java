@@ -7,7 +7,7 @@ import java.net.Socket;
 import client.Cliente;
 
 public class Servidor {
-     public static void main(String args[]) throws IOException {
+     public static void runServer(String args[]) throws IOException {
           ServerSocket ss = null;
           boolean continuar = true;
           int numeroThreads = 0;
