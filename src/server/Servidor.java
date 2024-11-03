@@ -37,7 +37,7 @@ public class Servidor {
                thread.start();
           }
 
-          ss.close();
+          //ss.close();
      }
 
 }

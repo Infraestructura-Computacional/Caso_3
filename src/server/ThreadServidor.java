@@ -7,28 +7,38 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ThreadServidor extends Thread {
-     private Socket sktCliente = null;
-     private int id;
+    private final Socket sktCliente;  // Socket para el cliente específico
+    private final int id;  // Identificador único del hilo
 
-     public ThreadServidor(Socket pSocket, int pId) {
-          this.sktCliente = pSocket;
-          this.id = pId;
-     }
+    public ThreadServidor(Socket pSocket, int pId) {
+        this.sktCliente = pSocket;
+        this.id = pId;
+    }
 
-     public void run() {
-          System.out.println("Inicio de un nuevo thread: " + id);
+    public void run() {
+        System.out.println("Inicio de un nuevo thread: " + id);
 
-          try {
-               PrintWriter escritor = new PrintWriter(sktCliente.getOutputStream(), true);
-               BufferedReader lector = new BufferedReader(new InputStreamReader(sktCliente.getInputStream()));
+        // Manejo de recursos usando try-with-resources
+        try (
+            PrintWriter escritor = new PrintWriter(sktCliente.getOutputStream(), true);
+            BufferedReader lector = new BufferedReader(new InputStreamReader(sktCliente.getInputStream()))
+        ) {
+            // Procesar la comunicación con el cliente usando el protocolo del servidor
+            ProtocoloServidor.procesar(lector, escritor);
 
-               ProtocoloServidor.procesar(lector, escritor);
-
-               escritor.close();
-               lector.close();
-               sktCliente.close();
-          } catch (IOException e) {
-               e.printStackTrace();
-          }
-     }
+        } catch (IOException e) {
+            System.err.println("Error en el thread " + id + ": " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            // Asegurarse de que el socket del cliente se cierre al final
+            try {
+                if (sktCliente != null && !sktCliente.isClosed()) {
+                    sktCliente.close();
+                }
+                System.out.println("Conexión cerrada para el cliente en thread: " + id);
+            } catch (IOException e) {
+                System.err.println("Error cerrando el socket del cliente en thread " + id + ": " + e.getMessage());
+            }
+        }
+    }
 }

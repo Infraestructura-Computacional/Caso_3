@@ -6,31 +6,15 @@ import java.io.PrintWriter;
 
 public class ProtocoloCliente {
      public static void procesar(BufferedReader stdIn, BufferedReader pIn, PrintWriter pOut) throws IOException {
+          String[] mensajes = {"Hola", "5", "OK"};
           String fromServer;
-          String fromUser;
-
           boolean ejecutar = true;
 
-          while (ejecutar) {
-               // lee del teclado
-               System.out.println("Escriba el mensaje para enviar: ");
-               fromUser = stdIn.readLine();
+          for (String fromUser : mensajes) {
+               System.out.println("El usuario escribió: " + fromUser);
+               pOut.println(fromUser); // Enviar mensaje al servidor
 
-               // si lo que ingresa el usuario no es null y es diferente de "-1"
-               if (fromUser != null) {
-                    System.out.println("El usuario escribió: " + fromUser);
-                    // si lo que ingresa el usuario es "OK"
-                    if (fromUser.equalsIgnoreCase("OK")) {
-                         ejecutar = false;
-                    }
-
-                    // envía por la red
-                    pOut.println(fromUser);
-               }
-
-               // lee lo que llega por la red
-               // si lo que llega del servidor no es null
-               // observe la asignación luego la condición
+               // Leer respuesta del servidor
                if ((fromServer = pIn.readLine()) != null) {
                     System.out.println("Respuesta del Servidor: " + fromServer);
                }
