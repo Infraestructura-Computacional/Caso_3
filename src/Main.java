@@ -1,7 +1,9 @@
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 public class Main {
-     public static void main(String[] args) {
+     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
           Scanner scanner = new Scanner(System.in);
           Main mainInstance = new Main(); // Crear una instancia de Main
           
@@ -21,8 +23,8 @@ public class Main {
       }
 
     //TODO
-    public void generarLlaves(){
-
+    public void generarLlaves() throws NoSuchAlgorithmException, IOException{
+        Llaves.RSA.guardarLlaves();
     }
 
     //TODO
