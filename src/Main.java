@@ -5,27 +5,35 @@ import client.Cliente;
 import server.Servidor;
 
 public class Main {
+
+     public static String rutaLlavePrivada = "src/server/K_w-.txt";
+     public static String rutaLlavePublica = "src/server/K_w+.txt";
      public static void main(String[] args) {
           Scanner scanner = new Scanner(System.in);
-          Main mainInstance = new Main(); // Crear una instancia de Main
+          Main mainInstance = new Main();
 
+          System.out.println("---------------MENU---------------");
           System.out.println("1) Generar pareja de llaves");
           System.out.println("2) Ejecutar");
+          System.out.println("3) Salir");
           int opcion = scanner.nextInt();
 
           if (opcion == 1) {
                mainInstance.generarLlaves();
           } else if (opcion == 2) {
                try {
-                    // mainInstance.ejecutar(1,32);
-                    // mainInstance.ejecutar(4, 1);
-                    // mainInstance.ejecutar(8,1);
-                    mainInstance.ejecutar(32,1);
+                    // mainInstance.ejecutar(1,"32");
+                    mainInstance.ejecutar(1, "1");
+                    // mainInstance.ejecutar(4, "1");
+                    // mainInstance.ejecutar(8,"1");
+                    // mainInstance.ejecutar(32,"1");
                } catch (IOException e) {
                     e.printStackTrace();
                }
+          } else if (opcion == 3) {
+               System.out.println("Adiós :)");
           } else {
-               System.out.println("Opción inválida. Por favor, digite 1 o 2.");
+               System.out.println("Opción inválida. Por favor, digite 1, 2 o 3.");
           }
 
           scanner.close();
@@ -37,8 +45,7 @@ public class Main {
      }
 
      // TODO
-     public void ejecutar(int numClientes, int peticionesPorCliente) throws IOException {
-          // Ejecutar el servidor en un hilo separado
+     public void ejecutar(int numClientes, String peticionesPorCliente) throws IOException {
           Thread servidorThread = new Thread(() -> {
                try {
                     Servidor.main(null);
@@ -46,26 +53,26 @@ public class Main {
                     e.printStackTrace();
                }
           });
-          servidorThread.start(); // Iniciar el hilo del servidor
+          servidorThread.start();
 
           // Esperar un momento para asegurarse de que el servidor esté listo antes de
           // iniciar los clientes
           // try {
-          // Thread.sleep(50); // Aumenta el tiempo de espera si es necesario
+          // Thread.sleep(500);
           // } catch (InterruptedException e) {
           // e.printStackTrace();
           // }
 
-          // Ejecutar los clientes de forma secuencial con pausa adicional
           for (int i = 0; i < numClientes; i++) {
                try {
-                    Cliente.main(null);
-                    //Thread.sleep(50); // Espera más tiempo entre conexiones de clientes
+                    String[] args = {peticionesPorCliente};
+                    Cliente.main(args);
+                    // Thread.sleep(50);
                } catch (IOException e) {
                     e.printStackTrace();
-               } 
+               }
                // catch (InterruptedException e) {
-               //      e.printStackTrace();
+               // e.printStackTrace();
                // }
           }
      }
