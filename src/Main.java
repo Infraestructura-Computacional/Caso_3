@@ -28,10 +28,10 @@ public class Main {
           } else if (opcion == 2) {
                try {
                     // mainInstance.ejecutar(1,32);
-                    // mainInstance.ejecutar(1, 1);
+                    mainInstance.ejecutar(1, 1);
                     // mainInstance.ejecutar(4,1);
                     // mainInstance.ejecutar(8,1);
-                    mainInstance.ejecutar(32,1);
+                    // mainInstance.ejecutar(32,1);
                } catch (Exception e) {
                     e.printStackTrace();
                }
@@ -46,8 +46,8 @@ public class Main {
 
      // TODO
      public void ejecutar(int numClientes, int peticionesPorCliente) throws Exception {
-          PrivateKey privateKey = Llaves.RSA.leerClavePrivada(rutaLlavePrivada);
-          PublicKey publicKey = Llaves.RSA.leerClavePublica(rutaLlavePublica);
+          PrivateKey serverPrivateKey = Llaves.RSA.leerClavePrivada(rutaLlavePrivada);
+          PublicKey serverPublicKey = Llaves.RSA.leerClavePublica(rutaLlavePublica);
          
           // String privateKeyBase64 = Base64.getEncoder().encodeToString(privateKey.getEncoded());
           // String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKey.getEncoded());
@@ -56,7 +56,7 @@ public class Main {
 
           Thread servidorThread = new Thread(() -> {
                try {
-                    Servidor.runServer(null);
+                    Servidor.runServer(serverPrivateKey, serverPublicKey);
                } catch (IOException e) {
                     e.printStackTrace();
                }
@@ -74,7 +74,7 @@ public class Main {
           for (int i = 0; i < numClientes; i++) {
                Thread clienteThread = new Thread(() -> {
                     try {
-                        Cliente.runClient(peticionesPorCliente);
+                        Cliente.runClient(peticionesPorCliente, serverPublicKey);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

@@ -12,9 +12,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+
+import javax.crypto.Cipher;
 
 public class RSA {
-    
+
     public static Key[] generarLlaves() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(1024);
@@ -26,7 +29,8 @@ public class RSA {
         return new Key[] { privateKey, publicKey };
     }
 
-    public static void guardarLlaves(String rutaPrivada, String rutaPublica) throws NoSuchAlgorithmException, IOException {
+    public static void guardarLlaves(String rutaPrivada, String rutaPublica)
+            throws NoSuchAlgorithmException, IOException {
         Key[] llaves = generarLlaves();
 
         String publicKeyPath = rutaPublica;
@@ -51,4 +55,21 @@ public class RSA {
         return keyFactory.generatePublic(spec);
     }
 
+    public static byte[] cifrarConClavePublica(byte[] datos, PublicKey clavePublica) throws Exception {
+        // Crear un objeto Cipher para cifrar usando RSA
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, clavePublica);
+
+        // Cifrar los datos (el número aleatorio en este caso)
+        return cipher.doFinal(datos);
+    }
+
+    public static byte[] descifrarConClavePrivada(String datosCifradosBase64, PrivateKey clavePrivada)
+            throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, clavePrivada);
+
+        byte[] datosCifrados = Base64.getDecoder().decode(datosCifradosBase64);
+        return cipher.doFinal(datosCifrados);
+    }
 }
