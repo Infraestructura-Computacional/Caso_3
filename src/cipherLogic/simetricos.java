@@ -1,4 +1,4 @@
-package Llaves;
+package cipherLogic;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -18,14 +18,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class DiffieHellman {
+public class simetricos {
 
     public BigInteger p;
     public BigInteger g;
     public BigInteger x;
     public BigInteger gx;
 
-    public DiffieHellman() {
+    public simetricos() {
         String output = generarOutput();
         //System.out.println(output);
         String[] pg = getPG(output);
@@ -119,8 +119,8 @@ public class DiffieHellman {
         SecretKey kAB2 = new SecretKeySpec(kAB2Bytes, "HmacSHA384");
 
         // Imprimir en hexadecimal para verificar
-        System.out.println("Clave K_AB1: " + RSA.bytesToHex(kAB1.getEncoded()));
-        System.out.println("Clave K_AB2: " + RSA.bytesToHex(kAB2.getEncoded()));
+        System.out.println("Clave K_AB1: " + asimetricos.bytesToHex(kAB1.getEncoded()));
+        System.out.println("Clave K_AB2: " + asimetricos.bytesToHex(kAB2.getEncoded()));
 
         SecretKey[] keyPair = {kAB1, kAB2};
         return keyPair;

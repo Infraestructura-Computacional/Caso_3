@@ -28,10 +28,10 @@ public class Main {
           } else if (opcion == 2) {
                try {
                     // mainInstance.ejecutar(1,32);
-                    mainInstance.ejecutar(2, 3);
+                    // mainInstance.ejecutar(2, 2);
                     // mainInstance.ejecutar(4,1);
                     // mainInstance.ejecutar(8,1);
-                    // mainInstance.ejecutar(32,1);
+                    mainInstance.ejecutar(32,1);
                } catch (Exception e) {
                     e.printStackTrace();
                }
@@ -46,8 +46,8 @@ public class Main {
 
      // TODO
      public void ejecutar(int numClientes, int peticionesPorCliente) throws Exception {
-          PrivateKey serverPrivateKey = Llaves.RSA.leerClavePrivada(rutaLlavePrivada);
-          PublicKey serverPublicKey = Llaves.RSA.leerClavePublica(rutaLlavePublica);
+          PrivateKey serverPrivateKey = cipherLogic.asimetricos.leerClavePrivada(rutaLlavePrivada);
+          PublicKey serverPublicKey = cipherLogic.asimetricos.leerClavePublica(rutaLlavePublica);
          
           // String privateKeyBase64 = Base64.getEncoder().encodeToString(privateKey.getEncoded());
           // String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKey.getEncoded());
@@ -65,11 +65,11 @@ public class Main {
 
           // Esperar un momento para asegurarse de que el servidor esté listo antes de
           // iniciar los clientes
-          try {
-          Thread.sleep(500);
-          } catch (InterruptedException e) {
-          e.printStackTrace();
-          }
+          // try {
+          // Thread.sleep(500);
+          // } catch (InterruptedException e) {
+          // e.printStackTrace();
+          // }
 
           for (int i = 0; i < numClientes; i++) {
                int idCliente = i;
@@ -88,7 +88,7 @@ public class Main {
      }
 
      public void generarLlaves() throws NoSuchAlgorithmException, IOException {
-          Llaves.RSA.guardarLlaves(rutaLlavePrivada, rutaLlavePublica);
+          cipherLogic.asimetricos.guardarLlaves(rutaLlavePrivada, rutaLlavePublica);
      }
 
 }

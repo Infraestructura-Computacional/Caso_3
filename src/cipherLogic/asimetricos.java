@@ -1,4 +1,4 @@
-package Llaves;
+package cipherLogic;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -19,7 +19,7 @@ import java.util.Base64;
 
 import javax.crypto.Cipher;
 
-public class RSA {
+public class asimetricos {
 
     public static Key[] generarLlaves() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");

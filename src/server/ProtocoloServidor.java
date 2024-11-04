@@ -9,7 +9,7 @@ import java.security.PublicKey;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import Llaves.DiffieHellman;
+import cipherLogic.simetricos;
 
 public class ProtocoloServidor {
      public static void procesar(BufferedReader pIn, PrintWriter pOut, PrivateKey privateKey, PublicKey publicKey)
@@ -17,13 +17,13 @@ public class ProtocoloServidor {
           String inputLine;
           String outputLine;
           int estado = 0;
-          DiffieHellman dh = new DiffieHellman();
+          simetricos dh = new simetricos();
           SecretKey kAB1 = null;
           SecretKey kAB2 = null;
           IvParameterSpec ivSpec = null;
 
           while (estado < 7 && (inputLine = pIn.readLine()) != null) {
-               System.out.println("Entrada a procesar: " + inputLine);
+               //System.out.println("Entrada a procesar: " + inputLine);
                switch (estado) {
                     case 0:
                          if (inputLine.equalsIgnoreCase("SECINIT")) {
@@ -38,7 +38,7 @@ public class ProtocoloServidor {
                     case 1:
                          try {
                               String numeroCifradoBase64 = inputLine;
-                              byte[] numeroDescifrado = Llaves.RSA.descifrarConClavePrivada(numeroCifradoBase64,
+                              byte[] numeroDescifrado = cipherLogic.asimetricos.descifrarConClavePrivada(numeroCifradoBase64,
                                         privateKey);
                               outputLine = "" + new BigInteger(numeroDescifrado).toString();
                               estado++;
@@ -54,7 +54,7 @@ public class ProtocoloServidor {
                               BigInteger P = dh.getP();
                               BigInteger Gx = dh.getGx();
                               String mensaje = "" + G + " " + P + " " + Gx;
-                              String Firma = Llaves.RSA.firmarSHA1withRSA(mensaje, privateKey);
+                              String Firma = cipherLogic.asimetricos.firmarSHA1withRSA(mensaje, privateKey);
                               outputLine = mensaje + ":::" + Firma;
                               estado++;
                          } else {
@@ -78,13 +78,13 @@ public class ProtocoloServidor {
                               BigInteger P = dh.getP();
                               BigInteger GYx = Gy.modPow(x, P);
                               // System.out.println("USADOS: " + Gy + " "+ x + " "+ P + " "+ GYx);
-                              SecretKey[] kABs = Llaves.DiffieHellman.getKABs(GYx);
+                              SecretKey[] kABs = cipherLogic.simetricos.getKABs(GYx);
                               kAB1 = kABs[0];
                               kAB2 = kABs[1];
-                              ivSpec = Llaves.DiffieHellman.generarIV();
+                              ivSpec = cipherLogic.simetricos.generarIV();
                               // System.out.println("KAB1 EN SERVER: " + kAB1.toString());
                               // System.out.println("KAB2 EN SERVER: " + kAB2.toString());
-                              String ivBase64 = Llaves.DiffieHellman.ivToBase64(ivSpec);
+                              String ivBase64 = cipherLogic.simetricos.ivToBase64(ivSpec);
                               // System.out.println("IV EN SERVER: " + ivBase64);
                               outputLine = "" + ivBase64;
                               estado++;
@@ -106,19 +106,19 @@ public class ProtocoloServidor {
                                    String HMACUId = partesUId[1];
                                    String CPaqueteId = partesPaqueteId[0];
                                    String HMACPaqueteId = partesPaqueteId[1];
-                                   if (!Llaves.DiffieHellman.verifyHMAC(CUId, HMACUId, kAB2)) {
+                                   if (!cipherLogic.simetricos.verifyHMAC(CUId, HMACUId, kAB2)) {
                                         throw new SecurityException(
                                                   "El HMAC del UId no coincide. El mensaje podría haber sido alterado.");
                                    }
-                                   int UId = Integer.parseInt(Llaves.DiffieHellman.decryptAES(CUId, kAB1, ivSpec));
-                                   if (!Llaves.DiffieHellman.verifyHMAC(CPaqueteId, HMACPaqueteId, kAB2)) {
+                                   int UId = Integer.parseInt(cipherLogic.simetricos.decryptAES(CUId, kAB1, ivSpec));
+                                   if (!cipherLogic.simetricos.verifyHMAC(CPaqueteId, HMACPaqueteId, kAB2)) {
                                         throw new SecurityException(
                                                   "El HMAC del PaqueteIdno coincide. El mensaje podría haber sido alterado.");
                                    }
-                                   int PaqueteId = Integer.parseInt(Llaves.DiffieHellman.decryptAES(CPaqueteId, kAB1, ivSpec));
+                                   int PaqueteId = Integer.parseInt(cipherLogic.simetricos.decryptAES(CPaqueteId, kAB1, ivSpec));
                                    // System.out.println("CONSULTALNDO: " + UId + " - " + PaqueteId);
                                    int valor = Servidor.tablaInfo[UId][PaqueteId];
-                                   String cipherEstado = Llaves.DiffieHellman.encryptAndSign(""+valor, kAB1, kAB2, ivSpec);
+                                   String cipherEstado = cipherLogic.simetricos.encryptAndSign(""+valor, kAB1, kAB2, ivSpec);
                                    outputLine = "" + cipherEstado;
                               } catch (Exception e) {
                                    outputLine = "ERROR en argumento esperado de la solicutud de estado";

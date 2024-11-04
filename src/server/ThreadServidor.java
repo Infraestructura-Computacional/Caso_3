@@ -22,7 +22,7 @@ public class ThreadServidor extends Thread {
     }
 
     public void run() {
-        System.out.println("Inicio de un nuevo thread: " + id);
+        System.out.println("Inicio de un nuevo servidor delegado: " + id);
 
         // Manejo de recursos usando try-with-resources
         try (
@@ -41,7 +41,7 @@ public class ThreadServidor extends Thread {
                 if (sktCliente != null && !sktCliente.isClosed()) {
                     sktCliente.close();
                 }
-                System.out.println("Conexión cerrada para el cliente en thread: " + id);
+                System.out.println("Conexión cerrada para el cliente en servidor delegado: " + id);
             } catch (IOException e) {
                 System.err.println("Error cerrando el socket del cliente en thread " + id + ": " + e.getMessage());
             }
