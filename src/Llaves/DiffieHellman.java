@@ -1,24 +1,89 @@
 package Llaves;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DiffieHellman {
-    
-    public static BigInteger p = new BigInteger("00fb124e1b9a94fc3a9b29c704e8289eed2482ad8e36921bc4cbb15de87ab41ad7e11a41c5d29f70592ae14530af44a24d60f78532ed552c72b0fcda147c37bb309141669974ffed24c390c5748a7c594c8516bd0314cc2e454f39e3b56cb974dfe836f4b12d47489ab4197f456855e4d6dcbdb5fbe367555a657b53ee54cb3760f", 16);
-    public static BigInteger g = new BigInteger("2", 16);
-    public static BigInteger gx;
-    public static BigInteger clavePrivada;
 
-    public static void generarGx() {
-        gx = g.modPow(g, clavePrivada);
+    public BigInteger p;
+    public BigInteger g;
+    public BigInteger x;
+    public BigInteger gx;
+
+    public DiffieHellman() {
+        String output = generarOutput();
+        //System.out.println(output);
+        String[] pg = getPG(output);
+        this.p = new BigInteger(pg[0],16);
+        this.g = new BigInteger(pg[1],16);
+        // System.out.println("P: " + p);
+        // System.out.println("G: " + g);
+        SecureRandom random = new SecureRandom();
+        this.x = new BigInteger(p.bitLength() - 1, random).add(BigInteger.ONE);
+        this.gx = g.modPow(x, p);
     }
 
-    public static void generarClavePrivada() {
-        clavePrivada = new BigInteger(1024, 100, new java.security.SecureRandom());
-        while (clavePrivada.compareTo(p) >= 0) {
-            clavePrivada = new BigInteger(1024, 100, new java.security.SecureRandom());
+    public static String generarOutput() {
+        String outputString = "";
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(
+                    "src/OpenSSL-1.1.1h_win32/openssl", "dhparam", "-text", "1024");
+            // Iniciar el proceso
+            Process process = processBuilder.start();
+            // Leer la salida del commando
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            StringBuilder output = new StringBuilder();
+            // Almacena toda la salida para procesarla después
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+            reader.close();
+            process.waitFor();
+            outputString = output.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return outputString;
+    }
+
+    public String[] getPG(String output) {
+        // Expresiones regulares para extraer los valores de prime y generator
+        Pattern primePattern = Pattern.compile("prime:\\s*((?:[0-9a-f]{2}:)+[0-9a-f]{2})", Pattern.MULTILINE);
+        Pattern generatorPattern = Pattern.compile("generator:\\s*(\\d+)", Pattern.MULTILINE);
+
+        // Buscar el valor de prime
+        Matcher primeMatcher = primePattern.matcher(output);
+        String primeHex = "";
+        if (primeMatcher.find()) {
+            primeHex = primeMatcher.group(1).replace(":", ""); // Eliminar los dos puntos
+        }
+
+        // Buscar el valor de generator
+        Matcher generatorMatcher = generatorPattern.matcher(output);
+        String generator = "";
+        if (generatorMatcher.find()) {
+            generator = generatorMatcher.group(1);
+        }
+
+        // Imprimir resultados
+        // System.out.println("Prime (hex): " + primeHex);
+        // System.out.println("Generator: " + generator);
+
+        // Convertir prime de hexadecimal a BigInteger
+        // if (!primeHex.isEmpty()) {
+        //     BigInteger prime = new BigInteger(primeHex, 16);
+        //     System.out.println("Prime (decimal): " + prime);
+        // }
+        String[] pg = {primeHex,generator}; 
+        return pg;
     }
 
     public static byte[] generarSHA512(BigInteger valor) throws NoSuchAlgorithmException {
@@ -26,6 +91,21 @@ public class DiffieHellman {
         return sha512.digest(valor.toByteArray());
     }
 
+    public BigInteger getP() {
+        return p;
+    }
 
+    public BigInteger getG() {
+        return g;
+    }
+
+    public BigInteger getX() {
+        return x;
+    }
+
+    public BigInteger getGx() {
+        return gx;
+    }
+
+    
 }
-

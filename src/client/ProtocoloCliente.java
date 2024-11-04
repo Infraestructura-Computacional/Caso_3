@@ -37,6 +37,17 @@ public class ProtocoloCliente {
                System.out.println("Respuesta del Servidor: " + fromServer);
           }
 
+          String[] partes = fromServer.split(":::");
+          String mensaje = partes[0];
+          String firma = partes[1];
+          boolean checkFirma = Llaves.RSA.verificarFirmaSHA1withRSA(mensaje, firma, serverPublicKey);
+          System.out.println("El usuario verificó la firma: " + checkFirma);
+          if (checkReto) pOut.println("OK"); // Estado 2 paso 6
+          else pOut.println("ERROR");
+          if ((fromServer = pIn.readLine()) != null) {
+               System.out.println("Respuesta del Servidor: " + fromServer);
+          }
+
      }
 
      public static BigInteger generarReto() {
