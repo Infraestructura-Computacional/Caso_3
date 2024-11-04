@@ -46,8 +46,8 @@ public class Main {
 
      // TODO
      public void ejecutar(int numClientes, int peticionesPorCliente) throws Exception {
-          PrivateKey serverPrivateKey = cipherLogic.asimetricos.leerClavePrivada(rutaLlavePrivada);
-          PublicKey serverPublicKey = cipherLogic.asimetricos.leerClavePublica(rutaLlavePublica);
+          PrivateKey serverPrivateKey = cipherLogic.Asimetricos.leerClavePrivada(rutaLlavePrivada);
+          PublicKey serverPublicKey = cipherLogic.Asimetricos.leerClavePublica(rutaLlavePublica);
          
           // String privateKeyBase64 = Base64.getEncoder().encodeToString(privateKey.getEncoded());
           // String publicKeyBase64 = Base64.getEncoder().encodeToString(publicKey.getEncoded());
@@ -88,7 +88,7 @@ public class Main {
      }
 
      public void generarLlaves() throws NoSuchAlgorithmException, IOException {
-          cipherLogic.asimetricos.guardarLlaves(rutaLlavePrivada, rutaLlavePublica);
+          cipherLogic.Asimetricos.guardarLlaves(rutaLlavePrivada, rutaLlavePublica);
      }
 
 }

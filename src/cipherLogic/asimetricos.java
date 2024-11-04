@@ -19,7 +19,7 @@ import java.util.Base64;
 
 import javax.crypto.Cipher;
 
-public class asimetricos {
+public class Asimetricos {
 
     public static Key[] generarLlaves() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");

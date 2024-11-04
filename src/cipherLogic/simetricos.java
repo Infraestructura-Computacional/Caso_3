@@ -18,14 +18,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class simetricos {
+public class Simetricos {
 
     public BigInteger p;
     public BigInteger g;
     public BigInteger x;
     public BigInteger gx;
 
-    public simetricos() {
+    public Simetricos() {
         String output = generarOutput();
         //System.out.println(output);
         String[] pg = getPG(output);
@@ -119,8 +119,8 @@ public class simetricos {
         SecretKey kAB2 = new SecretKeySpec(kAB2Bytes, "HmacSHA384");
 
         // Imprimir en hexadecimal para verificar
-        System.out.println("Clave K_AB1: " + asimetricos.bytesToHex(kAB1.getEncoded()));
-        System.out.println("Clave K_AB2: " + asimetricos.bytesToHex(kAB2.getEncoded()));
+        System.out.println("Clave K_AB1: " + Asimetricos.bytesToHex(kAB1.getEncoded()));
+        System.out.println("Clave K_AB2: " + Asimetricos.bytesToHex(kAB2.getEncoded()));
 
         SecretKey[] keyPair = {kAB1, kAB2};
         return keyPair;

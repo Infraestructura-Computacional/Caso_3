@@ -9,7 +9,7 @@ import java.security.PublicKey;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import cipherLogic.simetricos;
+import cipherLogic.Simetricos;
 
 public class ProtocoloServidor {
      public static void procesar(BufferedReader pIn, PrintWriter pOut, PrivateKey privateKey, PublicKey publicKey)
@@ -17,7 +17,7 @@ public class ProtocoloServidor {
           String inputLine;
           String outputLine;
           int estado = 0;
-          simetricos dh = new simetricos();
+          Simetricos dh = new Simetricos();
           SecretKey kAB1 = null;
           SecretKey kAB2 = null;
           IvParameterSpec ivSpec = null;
@@ -38,7 +38,7 @@ public class ProtocoloServidor {
                     case 1:
                          try {
                               String numeroCifradoBase64 = inputLine;
-                              byte[] numeroDescifrado = cipherLogic.asimetricos.descifrarConClavePrivada(numeroCifradoBase64,
+                              byte[] numeroDescifrado = cipherLogic.Asimetricos.descifrarConClavePrivada(numeroCifradoBase64,
                                         privateKey);
                               outputLine = "" + new BigInteger(numeroDescifrado).toString();
                               estado++;
@@ -54,7 +54,7 @@ public class ProtocoloServidor {
                               BigInteger P = dh.getP();
                               BigInteger Gx = dh.getGx();
                               String mensaje = "" + G + " " + P + " " + Gx;
-                              String Firma = cipherLogic.asimetricos.firmarSHA1withRSA(mensaje, privateKey);
+                              String Firma = cipherLogic.Asimetricos.firmarSHA1withRSA(mensaje, privateKey);
                               outputLine = mensaje + ":::" + Firma;
                               estado++;
                          } else {
@@ -78,13 +78,13 @@ public class ProtocoloServidor {
                               BigInteger P = dh.getP();
                               BigInteger GYx = Gy.modPow(x, P);
                               // System.out.println("USADOS: " + Gy + " "+ x + " "+ P + " "+ GYx);
-                              SecretKey[] kABs = cipherLogic.simetricos.getKABs(GYx);
+                              SecretKey[] kABs = cipherLogic.Simetricos.getKABs(GYx);
                               kAB1 = kABs[0];
                               kAB2 = kABs[1];
-                              ivSpec = cipherLogic.simetricos.generarIV();
+                              ivSpec = cipherLogic.Simetricos.generarIV();
                               // System.out.println("KAB1 EN SERVER: " + kAB1.toString());
                               // System.out.println("KAB2 EN SERVER: " + kAB2.toString());
-                              String ivBase64 = cipherLogic.simetricos.ivToBase64(ivSpec);
+                              String ivBase64 = cipherLogic.Simetricos.ivToBase64(ivSpec);
                               // System.out.println("IV EN SERVER: " + ivBase64);
                               outputLine = "" + ivBase64;
                               estado++;
@@ -106,19 +106,19 @@ public class ProtocoloServidor {
                                    String HMACUId = partesUId[1];
                                    String CPaqueteId = partesPaqueteId[0];
                                    String HMACPaqueteId = partesPaqueteId[1];
-                                   if (!cipherLogic.simetricos.verifyHMAC(CUId, HMACUId, kAB2)) {
+                                   if (!cipherLogic.Simetricos.verifyHMAC(CUId, HMACUId, kAB2)) {
                                         throw new SecurityException(
                                                   "El HMAC del UId no coincide. El mensaje podría haber sido alterado.");
                                    }
-                                   int UId = Integer.parseInt(cipherLogic.simetricos.decryptAES(CUId, kAB1, ivSpec));
-                                   if (!cipherLogic.simetricos.verifyHMAC(CPaqueteId, HMACPaqueteId, kAB2)) {
+                                   int UId = Integer.parseInt(cipherLogic.Simetricos.decryptAES(CUId, kAB1, ivSpec));
+                                   if (!cipherLogic.Simetricos.verifyHMAC(CPaqueteId, HMACPaqueteId, kAB2)) {
                                         throw new SecurityException(
                                                   "El HMAC del PaqueteIdno coincide. El mensaje podría haber sido alterado.");
                                    }
-                                   int PaqueteId = Integer.parseInt(cipherLogic.simetricos.decryptAES(CPaqueteId, kAB1, ivSpec));
+                                   int PaqueteId = Integer.parseInt(cipherLogic.Simetricos.decryptAES(CPaqueteId, kAB1, ivSpec));
                                    // System.out.println("CONSULTALNDO: " + UId + " - " + PaqueteId);
                                    int valor = Servidor.tablaInfo[UId][PaqueteId];
-                                   String cipherEstado = cipherLogic.simetricos.encryptAndSign(""+valor, kAB1, kAB2, ivSpec);
+                                   String cipherEstado = cipherLogic.Simetricos.encryptAndSign(""+valor, kAB1, kAB2, ivSpec);
                                    outputLine = "" + cipherEstado;
                               } catch (Exception e) {
                                    outputLine = "ERROR en argumento esperado de la solicutud de estado";

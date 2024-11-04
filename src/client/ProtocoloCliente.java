@@ -46,7 +46,7 @@ public class ProtocoloCliente {
           String[] partes = fromServer.split(":::");
           String mensaje = partes[0];
           String firma = partes[1];
-          boolean checkFirma = cipherLogic.asimetricos.verificarFirmaSHA1withRSA(mensaje, firma, serverPublicKey);
+          boolean checkFirma = cipherLogic.Asimetricos.verificarFirmaSHA1withRSA(mensaje, firma, serverPublicKey);
           String verificacionFirma = (checkFirma) ? " verificó la firma con éxito" : " falló al verificar la firma";
           System.out.println("El usuario " + idCliente + verificacionFirma);
           if (checkFirma)
@@ -74,20 +74,20 @@ public class ProtocoloCliente {
           BigInteger GXy = Gx.modPow(y, P);
           // System.out.println("El usuario calculó (G^x)^y: " + GXy);
           // System.out.println("USANDO: " + Gy + " "+ y + " "+ P + " "+ GXy);
-          SecretKey[] kABs = cipherLogic.simetricos.getKABs(GXy);
+          SecretKey[] kABs = cipherLogic.Simetricos.getKABs(GXy);
           SecretKey kAB1 = kABs[0];
           SecretKey kAB2 = kABs[1];
-          IvParameterSpec ivSpec = cipherLogic.simetricos.base64ToIv(fromServer);
+          IvParameterSpec ivSpec = cipherLogic.Simetricos.base64ToIv(fromServer);
           System.out.println("El usuario " + idCliente + " calculó sus llaves simétricas");
           // System.out.println("KAB1 EN CLIENTE: " + kAB1.toString());
           // System.out.println("KAB2 EN CLIENTE: " + kAB2.toString());
           // System.out.println("IV EN CLIENTE: " + fromServer);
 
-          String cipherUId = cipherLogic.simetricos.encryptAndSign("" + idCliente, kAB1, kAB2, ivSpec);
+          String cipherUId = cipherLogic.Simetricos.encryptAndSign("" + idCliente, kAB1, kAB2, ivSpec);
           int idPaquete = (numPeticiones == 1) ? idCliente : 0;
           for (int i = 0; i < numPeticiones; i++) {
                System.out.println("Soy el usuario: " + idCliente + " y quiero el paquete: " + idPaquete);
-               String cipherPaqueteId = cipherLogic.simetricos.encryptAndSign("" + idPaquete, kAB1, kAB2, ivSpec);
+               String cipherPaqueteId = cipherLogic.Simetricos.encryptAndSign("" + idPaquete, kAB1, kAB2, ivSpec);
                String solicitud = "" + cipherUId + ";;;" + cipherPaqueteId;
                // System.out.println("El usuario solicitó el estado del paquete: " +
                // idPaquete);
@@ -98,11 +98,11 @@ public class ProtocoloCliente {
                     String[] partesEstado = fromServer.split(":::");
                     String CEstado = partesEstado[0];
                     String HMACEstado = partesEstado[1];
-                    if (!cipherLogic.simetricos.verifyHMAC(CEstado, HMACEstado, kAB2)) {
+                    if (!cipherLogic.Simetricos.verifyHMAC(CEstado, HMACEstado, kAB2)) {
                          throw new SecurityException(
                                    "El HMAC del Estado no coincide. El mensaje podría haber sido alterado.");
                     }
-                    int estado = Integer.parseInt(cipherLogic.simetricos.decryptAES(CEstado, kAB1, ivSpec));
+                    int estado = Integer.parseInt(cipherLogic.Simetricos.decryptAES(CEstado, kAB1, ivSpec));
                     String estadoString = server.Servidor.getEstado(estado);
                     System.out.println("El usuario " + idCliente + " recibió que el estado del paquete " + idPaquete + " es: " + estadoString);
                }
@@ -128,7 +128,7 @@ public class ProtocoloCliente {
      public static String calcularReto(BigInteger reto, PublicKey publicKey) throws Exception {
 
           // Cifrar el número aleatorio con la clave pública del servidor
-          byte[] numeroCifrado = cipherLogic.asimetricos.cifrarConClavePublica(reto.toByteArray(), publicKey);
+          byte[] numeroCifrado = cipherLogic.Asimetricos.cifrarConClavePublica(reto.toByteArray(), publicKey);
           String numeroCifradoBase64 = Base64.getEncoder().encodeToString(numeroCifrado);
 
           return numeroCifradoBase64;
