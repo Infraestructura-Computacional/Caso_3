@@ -7,8 +7,13 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class DiffieHellman {
 
@@ -89,6 +94,45 @@ public class DiffieHellman {
     public static byte[] generarSHA512(BigInteger valor) throws NoSuchAlgorithmException {
         MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
         return sha512.digest(valor.toByteArray());
+    }
+
+    public static SecretKey getKAB(BigInteger sharedSecret, String tipo) throws NoSuchAlgorithmException {
+        // Convertir el secreto compartido a un array de bytes
+        byte[] sharedSecretBytes = sharedSecret.toByteArray();
+
+        // Calcular SHA-512 del secreto compartido
+        MessageDigest sha512 = MessageDigest.getInstance("SHA-512");
+        byte[] hash = sha512.digest(sharedSecretBytes);
+
+        // Separar el hash en dos mitades
+        byte[] kABBytes = new byte[32];
+        
+        int srcPos = (tipo.equals("AES")) ? 0 : 32;
+        System.arraycopy(hash, srcPos, kABBytes, 0, 32); // Segunda mitad (K_AB2)
+
+        // Generar las llaves simétricas
+        SecretKey kAB = new SecretKeySpec(kABBytes, tipo);
+
+        // Imprimir en hexadecimal para verificar
+        System.out.println("Clave K_AB: " + RSA.bytesToHex(kAB.getEncoded()));
+
+        return kAB;
+    }
+
+    public static IvParameterSpec generarIV() {
+        byte[] iv = new byte[16]; // 16 bytes para AES (128 bits)
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.nextBytes(iv);
+        return new IvParameterSpec(iv);
+    }
+
+    public static String ivToBase64(IvParameterSpec ivSpec) {
+        return Base64.getEncoder().encodeToString(ivSpec.getIV()); // Convertir IV a Base64
+    }
+
+    public static IvParameterSpec base64ToIv(String ivBase64) {
+        byte[] ivBytes = Base64.getDecoder().decode(ivBase64);
+        return new IvParameterSpec(ivBytes); // Reconstruir el IvParameterSpec a partir de los bytes
     }
 
     public BigInteger getP() {
