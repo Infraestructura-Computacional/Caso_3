@@ -3,6 +3,7 @@ package Llaves;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +12,8 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -96,7 +99,7 @@ public class DiffieHellman {
         return sha512.digest(valor.toByteArray());
     }
 
-    public static SecretKey getKAB(BigInteger sharedSecret, String tipo) throws NoSuchAlgorithmException {
+    public static SecretKey[] getKABs(BigInteger sharedSecret) throws NoSuchAlgorithmException {
         // Convertir el secreto compartido a un array de bytes
         byte[] sharedSecretBytes = sharedSecret.toByteArray();
 
@@ -105,18 +108,22 @@ public class DiffieHellman {
         byte[] hash = sha512.digest(sharedSecretBytes);
 
         // Separar el hash en dos mitades
-        byte[] kABBytes = new byte[32];
+        byte[] kAB1Bytes = new byte[32];
+        byte[] kAB2Bytes = new byte[32];
         
-        int srcPos = (tipo.equals("AES")) ? 0 : 32;
-        System.arraycopy(hash, srcPos, kABBytes, 0, 32); // Segunda mitad (K_AB2)
+        System.arraycopy(hash, 0, kAB1Bytes, 0, 32); // Segunda mitad (K_AB2)
+        System.arraycopy(hash, 32, kAB2Bytes, 0, 32); // Segunda mitad (K_AB2)
 
         // Generar las llaves simétricas
-        SecretKey kAB = new SecretKeySpec(kABBytes, tipo);
+        SecretKey kAB1 = new SecretKeySpec(kAB1Bytes, "AES");
+        SecretKey kAB2 = new SecretKeySpec(kAB2Bytes, "HmacSHA384");
 
         // Imprimir en hexadecimal para verificar
-        System.out.println("Clave K_AB: " + RSA.bytesToHex(kAB.getEncoded()));
+        System.out.println("Clave K_AB1: " + RSA.bytesToHex(kAB1.getEncoded()));
+        System.out.println("Clave K_AB2: " + RSA.bytesToHex(kAB2.getEncoded()));
 
-        return kAB;
+        SecretKey[] keyPair = {kAB1, kAB2};
+        return keyPair;
     }
 
     public static IvParameterSpec generarIV() {
@@ -151,5 +158,56 @@ public class DiffieHellman {
         return gx;
     }
 
+    public static String encryptAndSign(String num, SecretKey KAB1, SecretKey KAB2, IvParameterSpec iv) throws Exception {
+        // 1. Inicializar el cifrador AES en modo CBC con PKCS5Padding
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        aesCipher.init(Cipher.ENCRYPT_MODE, KAB1, iv);
+        
+        // 2. Cifrar el número num
+        byte[] encryptedNum = aesCipher.doFinal(num.getBytes(StandardCharsets.UTF_8));
+        String encryptedNumBase64 = Base64.getEncoder().encodeToString(encryptedNum);
+        
+        // 3. Inicializar HMACSHA384 con la llave KAB2
+        Mac mac = Mac.getInstance("HmacSHA384");
+        mac.init(KAB2);
+        
+        // 4. Calcular el HMACSHA384 del texto cifrado (encryptedNum)
+        byte[] hmac = mac.doFinal(encryptedNum);
+        String hmacBase64 = Base64.getEncoder().encodeToString(hmac);
+        
+        // 5. Concatenar ambos resultados con ":::" como separador
+        return encryptedNumBase64 + ":::" + hmacBase64;
+    }
+
+    public static String decryptAES(String encryptedText, SecretKey KAB1, IvParameterSpec iv) throws Exception {
+        // Convertir el texto cifrado de Base64 a bytes
+        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
+        
+        // Inicializar el cifrador AES en modo CBC con PKCS5Padding para descifrado
+        Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        aesCipher.init(Cipher.DECRYPT_MODE, KAB1, iv);
+        
+        // Descifrar los bytes
+        byte[] decryptedBytes = aesCipher.doFinal(encryptedBytes);
+        
+        // Convertir los bytes descifrados a String
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
+    }
+
+    public static boolean verifyHMAC(String encryptedText, String receivedHMAC, SecretKey KAB2) throws Exception {
+        // Convertir el texto cifrado de Base64 a bytes
+        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
+        
+        // Inicializar HMACSHA384 con la llave KAB2
+        Mac mac = Mac.getInstance("HmacSHA384");
+        mac.init(KAB2);
+        
+        // Calcular el HMAC del texto cifrado
+        byte[] computedHMAC = mac.doFinal(encryptedBytes);
+        String computedHMACBase64 = Base64.getEncoder().encodeToString(computedHMAC);
+        
+        // Comparar el HMAC recibido con el calculado
+        return computedHMACBase64.equals(receivedHMAC);
+    }
     
 }

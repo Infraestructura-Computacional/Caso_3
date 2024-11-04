@@ -12,7 +12,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class ProtocoloCliente {
-     public static void procesar(BufferedReader stdIn, BufferedReader pIn, PrintWriter pOut, PublicKey serverPublicKey)
+     public static void procesar(BufferedReader stdIn, BufferedReader pIn, PrintWriter pOut, PublicKey serverPublicKey,
+               int idCliente, int numPeticiones)
                throws Exception {
           String fromServer;
 
@@ -71,12 +72,47 @@ public class ProtocoloCliente {
           BigInteger GXy = Gx.modPow(y, P);
           // System.out.println("El usuario calculó (G^x)^y: " + GXy);
           // System.out.println("USANDO: " + Gy + " "+ y + " "+ P + " "+ GXy);
-          SecretKey kAB1 = Llaves.DiffieHellman.getKAB(GXy, "AES");
-          SecretKey kAB2 = Llaves.DiffieHellman.getKAB(GXy, "HmacSHA384");
+          SecretKey[] kABs = Llaves.DiffieHellman.getKABs(GXy);
+          SecretKey kAB1 = kABs[0];
+          SecretKey kAB2 = kABs[1];
           IvParameterSpec ivSpec = Llaves.DiffieHellman.base64ToIv(fromServer);
-          System.out.println("KAB1 EN CLIENTE: " + kAB1.toString());
-          System.out.println("KAB2 EN CLIENTE: " + kAB2.toString());
-          System.out.println("IV EN CLIENTE: " + fromServer);
+          // System.out.println("KAB1 EN CLIENTE: " + kAB1.toString());
+          // System.out.println("KAB2 EN CLIENTE: " + kAB2.toString());
+          // System.out.println("IV EN CLIENTE: " + fromServer);
+
+          String cipherUId = Llaves.DiffieHellman.encryptAndSign("" + idCliente, kAB1, kAB2, ivSpec);
+          int idPaquete = (numPeticiones == 1) ? idCliente : 0;
+          for (int i = 0; i < numPeticiones; i++) {
+               System.out.println("Soy id: " + idCliente + " y quiero el paquete: " + idPaquete);
+               String cipherPaqueteId = Llaves.DiffieHellman.encryptAndSign("" + idPaquete, kAB1, kAB2, ivSpec);
+               String solicitud = "" + cipherUId + ";;;" + cipherPaqueteId;
+               // System.out.println("El usuario solicitó el estado del paquete: " +
+               // idPaquete);
+               pOut.println(solicitud); // Estado 5 pasos 13-14
+               // Leer respuesta del servidor
+               if ((fromServer = pIn.readLine()) != null) {
+                    System.out.println("Respuesta del Servidor: " + fromServer);
+                    String[] partesEstado = fromServer.split(":::");
+                    String CEstado = partesEstado[0];
+                    String HMACEstado = partesEstado[1];
+                    if (!Llaves.DiffieHellman.verifyHMAC(CEstado, HMACEstado, kAB2)) {
+                         throw new SecurityException(
+                                   "El HMAC del Estado no coincide. El mensaje podría haber sido alterado.");
+                    }
+                    int estado = Integer.parseInt(Llaves.DiffieHellman.decryptAES(CEstado, kAB1, ivSpec));
+                    String estadoString = server.Servidor.getEstado(estado);
+                    System.out.println("El estado del paquete es: " + estadoString);
+               }
+               idPaquete++;
+          }
+
+          System.out.println("El usuario escribió: TERMINAR");
+          pOut.println("TERMINAR"); // Enviar mensaje al servidor // Estado 0 paso 1
+          // Leer respuesta del servidor
+          if ((fromServer = pIn.readLine()) != null) {
+               System.out.println("Respuesta del Servidor: " + fromServer);
+          }
+
      }
 
      public static BigInteger generarReto() {

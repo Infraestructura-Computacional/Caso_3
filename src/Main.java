@@ -28,7 +28,7 @@ public class Main {
           } else if (opcion == 2) {
                try {
                     // mainInstance.ejecutar(1,32);
-                    mainInstance.ejecutar(1, 1);
+                    mainInstance.ejecutar(2, 3);
                     // mainInstance.ejecutar(4,1);
                     // mainInstance.ejecutar(8,1);
                     // mainInstance.ejecutar(32,1);
@@ -56,7 +56,7 @@ public class Main {
 
           Thread servidorThread = new Thread(() -> {
                try {
-                    Servidor.runServer(serverPrivateKey, serverPublicKey);
+                    Servidor.runServer(numClientes, serverPrivateKey, serverPublicKey);
                } catch (IOException e) {
                     e.printStackTrace();
                }
@@ -65,16 +65,17 @@ public class Main {
 
           // Esperar un momento para asegurarse de que el servidor esté listo antes de
           // iniciar los clientes
-          // try {
-          // Thread.sleep(500);
-          // } catch (InterruptedException e) {
-          // e.printStackTrace();
-          // }
+          try {
+          Thread.sleep(500);
+          } catch (InterruptedException e) {
+          e.printStackTrace();
+          }
 
           for (int i = 0; i < numClientes; i++) {
+               int idCliente = i;
                Thread clienteThread = new Thread(() -> {
                     try {
-                        Cliente.runClient(peticionesPorCliente, serverPublicKey);
+                        Cliente.runClient(idCliente, peticionesPorCliente, serverPublicKey);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

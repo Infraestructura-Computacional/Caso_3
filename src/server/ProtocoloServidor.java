@@ -18,11 +18,11 @@ public class ProtocoloServidor {
           String outputLine;
           int estado = 0;
           DiffieHellman dh = new DiffieHellman();
-          SecretKey kAB1;
-          SecretKey kAB2;
-          IvParameterSpec ivSpec;
+          SecretKey kAB1 = null;
+          SecretKey kAB2 = null;
+          IvParameterSpec ivSpec = null;
 
-          while (estado < 5 && (inputLine = pIn.readLine()) != null) {
+          while (estado < 7 && (inputLine = pIn.readLine()) != null) {
                System.out.println("Entrada a procesar: " + inputLine);
                switch (estado) {
                     case 0:
@@ -78,21 +78,63 @@ public class ProtocoloServidor {
                               BigInteger P = dh.getP();
                               BigInteger GYx = Gy.modPow(x, P);
                               // System.out.println("USADOS: " + Gy + " "+ x + " "+ P + " "+ GYx);
-                              kAB1 = Llaves.DiffieHellman.getKAB(GYx, "AES");
-                              kAB2 = Llaves.DiffieHellman.getKAB(GYx, "HmacSHA384");
+                              SecretKey[] kABs = Llaves.DiffieHellman.getKABs(GYx);
+                              kAB1 = kABs[0];
+                              kAB2 = kABs[1];
                               ivSpec = Llaves.DiffieHellman.generarIV();
-                              System.out.println("KAB1 EN SERVER: " + kAB1.toString());
-                              System.out.println("KAB2 EN SERVER: " + kAB2.toString());
+                              // System.out.println("KAB1 EN SERVER: " + kAB1.toString());
+                              // System.out.println("KAB2 EN SERVER: " + kAB2.toString());
                               String ivBase64 = Llaves.DiffieHellman.ivToBase64(ivSpec);
-                              System.out.println("IV EN SERVER: " + ivBase64);
+                              // System.out.println("IV EN SERVER: " + ivBase64);
                               outputLine = "" + ivBase64;
                               estado++;
                          } catch (Exception e) {
-                              outputLine = "ERROR en argumento esperado del reto";
+                              outputLine = "ERROR en argumento esperado del G^y";
                               estado = 0;
                          }
                          break;
-
+                    case 5:
+                         if (inputLine.equals("TERMINAR")) {
+                              outputLine = "Adiós :)";
+                              estado++;
+                         } else {
+                              try {
+                                   String[] partesCifradas = inputLine.split(";;;");
+                                   String[] partesUId = partesCifradas[0].split(":::");
+                                   String[] partesPaqueteId = partesCifradas[1].split(":::");
+                                   String CUId = partesUId[0];
+                                   String HMACUId = partesUId[1];
+                                   String CPaqueteId = partesPaqueteId[0];
+                                   String HMACPaqueteId = partesPaqueteId[1];
+                                   if (!Llaves.DiffieHellman.verifyHMAC(CUId, HMACUId, kAB2)) {
+                                        throw new SecurityException(
+                                                  "El HMAC del UId no coincide. El mensaje podría haber sido alterado.");
+                                   }
+                                   int UId = Integer.parseInt(Llaves.DiffieHellman.decryptAES(CUId, kAB1, ivSpec));
+                                   if (!Llaves.DiffieHellman.verifyHMAC(CPaqueteId, HMACPaqueteId, kAB2)) {
+                                        throw new SecurityException(
+                                                  "El HMAC del PaqueteIdno coincide. El mensaje podría haber sido alterado.");
+                                   }
+                                   int PaqueteId = Integer.parseInt(Llaves.DiffieHellman.decryptAES(CPaqueteId, kAB1, ivSpec));
+                                   // System.out.println("CONSULTALNDO: " + UId + " - " + PaqueteId);
+                                   int valor = Servidor.tablaInfo[UId][PaqueteId];
+                                   String cipherEstado = Llaves.DiffieHellman.encryptAndSign(""+valor, kAB1, kAB2, ivSpec);
+                                   outputLine = "" + cipherEstado;
+                              } catch (Exception e) {
+                                   outputLine = "ERROR en argumento esperado de la solicutud de estado";
+                                   estado = 0;
+                              }
+                         }
+                         break;
+                    case 6:
+                         if (inputLine.equalsIgnoreCase("TERMINAR")) {
+                              outputLine = "Adiós :)";
+                              estado++;
+                         } else {
+                              outputLine = "ERROR. Esperaba TERMINAR";
+                              estado = 0;
+                         }
+                         break;
                     default:
                          outputLine = "ERROR";
                          estado = 0;
