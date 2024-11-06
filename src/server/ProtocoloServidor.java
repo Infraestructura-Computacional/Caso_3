@@ -3,6 +3,7 @@ package server;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -23,7 +24,7 @@ public class ProtocoloServidor {
           IvParameterSpec ivSpec = null;
 
           while (estado < 7 && (inputLine = pIn.readLine()) != null) {
-               //System.out.println("Entrada a procesar: " + inputLine);
+               // System.out.println("Entrada a procesar: " + inputLine);
                switch (estado) {
                     case 0:
                          if (inputLine.equalsIgnoreCase("SECINIT")) {
@@ -38,7 +39,8 @@ public class ProtocoloServidor {
                     case 1:
                          try {
                               String numeroCifradoBase64 = inputLine;
-                              byte[] numeroDescifrado = cipherLogic.Asimetricos.descifrarConClavePrivada(numeroCifradoBase64,
+                              byte[] numeroDescifrado = cipherLogic.Asimetricos.descifrarConClavePrivada(
+                                        numeroCifradoBase64,
                                         privateKey);
                               outputLine = "" + new BigInteger(numeroDescifrado).toString();
                               estado++;
@@ -53,6 +55,7 @@ public class ProtocoloServidor {
                               BigInteger G = dh.getG();
                               BigInteger P = dh.getP();
                               BigInteger Gx = dh.getGx();
+
                               String mensaje = "" + G + " " + P + " " + Gx;
                               String Firma = cipherLogic.Asimetricos.firmarSHA1withRSA(mensaje, privateKey);
                               outputLine = mensaje + ":::" + Firma;
@@ -110,15 +113,19 @@ public class ProtocoloServidor {
                                         throw new SecurityException(
                                                   "El HMAC del UId no coincide. El mensaje podría haber sido alterado.");
                                    }
-                                   int UId = Integer.parseInt(cipherLogic.Simetricos.decryptAES(CUId, kAB1, ivSpec));
+                                   int UId = Integer.parseInt(cipherLogic.Simetricos.decryptAES(CUId, kAB1,
+                                             ivSpec));
                                    if (!cipherLogic.Simetricos.verifyHMAC(CPaqueteId, HMACPaqueteId, kAB2)) {
                                         throw new SecurityException(
                                                   "El HMAC del PaqueteIdno coincide. El mensaje podría haber sido alterado.");
                                    }
-                                   int PaqueteId = Integer.parseInt(cipherLogic.Simetricos.decryptAES(CPaqueteId, kAB1, ivSpec));
+                                   int PaqueteId = Integer
+                                             .parseInt(cipherLogic.Simetricos.decryptAES(CPaqueteId, kAB1, ivSpec));
                                    // System.out.println("CONSULTALNDO: " + UId + " - " + PaqueteId);
                                    int valor = Servidor.tablaInfo[UId][PaqueteId];
-                                   String cipherEstado = cipherLogic.Simetricos.encryptAndSign(""+valor, kAB1, kAB2, ivSpec);
+                                   String cipherEstado = cipherLogic.Simetricos.encryptAndSign("" + valor, kAB1,
+                                             kAB2,
+                                             ivSpec);
                                    outputLine = "" + cipherEstado;
                               } catch (Exception e) {
                                    outputLine = "ERROR en argumento esperado de la solicutud de estado";

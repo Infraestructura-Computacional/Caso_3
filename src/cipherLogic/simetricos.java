@@ -27,15 +27,34 @@ public class Simetricos {
 
     public Simetricos() {
         String output = generarOutput();
-        //System.out.println(output);
+        // System.out.println(output);
         String[] pg = getPG(output);
-        this.p = new BigInteger(pg[0],16);
-        this.g = new BigInteger(pg[1],16);
+        this.p = new BigInteger(pg[0], 16);
+        this.g = new BigInteger(pg[1], 16);
         // System.out.println("P: " + p);
         // System.out.println("G: " + g);
         SecureRandom random = new SecureRandom();
         this.x = new BigInteger(p.bitLength() - 1, random).add(BigInteger.ONE);
         this.gx = g.modPow(x, p);
+
+        // System.out.println("Thread " + Thread.currentThread().getId() + " comenzando calculo.");
+        // long startTime = System.nanoTime();
+        // for (int i = 0; i<5; i++) {
+        //     String output = generarOutput();
+        //     // System.out.println(output);
+        //     String[] pg = getPG(output);
+        //     this.p = new BigInteger(pg[0], 16);
+        //     this.g = new BigInteger(pg[1], 16);
+        //     // System.out.println("P: " + p);
+        //     // System.out.println("G: " + g);
+        //     SecureRandom random = new SecureRandom();
+        //     this.x = new BigInteger(p.bitLength() - 1, random).add(BigInteger.ONE);
+        //     this.gx = g.modPow(x, p);
+        // }
+        // long endTime = System.nanoTime();
+        // long duration = endTime - startTime;
+        // System.out.println(
+        // "################# El tiempo de calcular dh fue: " + (duration / 5) + " nanosegundos");
     }
 
     public static String generarOutput() {
@@ -87,10 +106,10 @@ public class Simetricos {
 
         // Convertir prime de hexadecimal a BigInteger
         // if (!primeHex.isEmpty()) {
-        //     BigInteger prime = new BigInteger(primeHex, 16);
-        //     System.out.println("Prime (decimal): " + prime);
+        // BigInteger prime = new BigInteger(primeHex, 16);
+        // System.out.println("Prime (decimal): " + prime);
         // }
-        String[] pg = {primeHex,generator}; 
+        String[] pg = { primeHex, generator };
         return pg;
     }
 
@@ -110,7 +129,7 @@ public class Simetricos {
         // Separar el hash en dos mitades
         byte[] kAB1Bytes = new byte[32];
         byte[] kAB2Bytes = new byte[32];
-        
+
         System.arraycopy(hash, 0, kAB1Bytes, 0, 32); // Segunda mitad (K_AB2)
         System.arraycopy(hash, 32, kAB2Bytes, 0, 32); // Segunda mitad (K_AB2)
 
@@ -122,7 +141,7 @@ public class Simetricos {
         System.out.println("Clave K_AB1: " + Asimetricos.bytesToHex(kAB1.getEncoded()));
         System.out.println("Clave K_AB2: " + Asimetricos.bytesToHex(kAB2.getEncoded()));
 
-        SecretKey[] keyPair = {kAB1, kAB2};
+        SecretKey[] keyPair = { kAB1, kAB2 };
         return keyPair;
     }
 
@@ -158,23 +177,24 @@ public class Simetricos {
         return gx;
     }
 
-    public static String encryptAndSign(String num, SecretKey KAB1, SecretKey KAB2, IvParameterSpec iv) throws Exception {
+    public static String encryptAndSign(String num, SecretKey KAB1, SecretKey KAB2, IvParameterSpec iv)
+            throws Exception {
         // 1. Inicializar el cifrador AES en modo CBC con PKCS5Padding
         Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         aesCipher.init(Cipher.ENCRYPT_MODE, KAB1, iv);
-        
+
         // 2. Cifrar el número num
         byte[] encryptedNum = aesCipher.doFinal(num.getBytes(StandardCharsets.UTF_8));
         String encryptedNumBase64 = Base64.getEncoder().encodeToString(encryptedNum);
-        
+
         // 3. Inicializar HMACSHA384 con la llave KAB2
         Mac mac = Mac.getInstance("HmacSHA384");
         mac.init(KAB2);
-        
+
         // 4. Calcular el HMACSHA384 del texto cifrado (encryptedNum)
         byte[] hmac = mac.doFinal(encryptedNum);
         String hmacBase64 = Base64.getEncoder().encodeToString(hmac);
-        
+
         // 5. Concatenar ambos resultados con ":::" como separador
         return encryptedNumBase64 + ":::" + hmacBase64;
     }
@@ -182,14 +202,14 @@ public class Simetricos {
     public static String decryptAES(String encryptedText, SecretKey KAB1, IvParameterSpec iv) throws Exception {
         // Convertir el texto cifrado de Base64 a bytes
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-        
+
         // Inicializar el cifrador AES en modo CBC con PKCS5Padding para descifrado
         Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         aesCipher.init(Cipher.DECRYPT_MODE, KAB1, iv);
-        
+
         // Descifrar los bytes
         byte[] decryptedBytes = aesCipher.doFinal(encryptedBytes);
-        
+
         // Convertir los bytes descifrados a String
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
@@ -197,17 +217,17 @@ public class Simetricos {
     public static boolean verifyHMAC(String encryptedText, String receivedHMAC, SecretKey KAB2) throws Exception {
         // Convertir el texto cifrado de Base64 a bytes
         byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
-        
+
         // Inicializar HMACSHA384 con la llave KAB2
         Mac mac = Mac.getInstance("HmacSHA384");
         mac.init(KAB2);
-        
+
         // Calcular el HMAC del texto cifrado
         byte[] computedHMAC = mac.doFinal(encryptedBytes);
         String computedHMACBase64 = Base64.getEncoder().encodeToString(computedHMAC);
-        
+
         // Comparar el HMAC recibido con el calculado
         return computedHMACBase64.equals(receivedHMAC);
     }
-    
+
 }

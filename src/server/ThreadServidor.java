@@ -31,6 +31,7 @@ public class ThreadServidor extends Thread {
         ) {
             // Procesar la comunicación con el cliente usando el protocolo del servidor
             ProtocoloServidor.procesar(lector, escritor, privateKey, publicKey);
+            // ProtocoloServidorTiming.procesar(lector, escritor, privateKey, publicKey);
 
         } catch (Exception e) {
             System.err.println("Error en el thread " + id + ": " + e.getMessage());

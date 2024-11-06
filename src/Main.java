@@ -27,11 +27,11 @@ public class Main {
                System.out.println("Llaves generadas correctamente.");
           } else if (opcion == 2) {
                try {
-                    // mainInstance.ejecutar(1,32);
+                    mainInstance.ejecutar(1,32);
                     // mainInstance.ejecutar(2, 2);
                     // mainInstance.ejecutar(4,1);
                     // mainInstance.ejecutar(8,1);
-                    mainInstance.ejecutar(32,1);
+                    // mainInstance.ejecutar(32,1);
                } catch (Exception e) {
                     e.printStackTrace();
                }
