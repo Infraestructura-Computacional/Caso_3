@@ -36,26 +36,28 @@ public class Simetricos {
         SecureRandom random = new SecureRandom();
         this.x = new BigInteger(p.bitLength() - 1, random).add(BigInteger.ONE);
         this.gx = g.modPow(x, p);
-
-        // System.out.println("Thread " + Thread.currentThread().getId() + " comenzando calculo.");
-        // long startTime = System.nanoTime();
-        // for (int i = 0; i<5; i++) {
-        //     String output = generarOutput();
-        //     // System.out.println(output);
-        //     String[] pg = getPG(output);
-        //     this.p = new BigInteger(pg[0], 16);
-        //     this.g = new BigInteger(pg[1], 16);
-        //     // System.out.println("P: " + p);
-        //     // System.out.println("G: " + g);
-        //     SecureRandom random = new SecureRandom();
-        //     this.x = new BigInteger(p.bitLength() - 1, random).add(BigInteger.ONE);
-        //     this.gx = g.modPow(x, p);
-        // }
-        // long endTime = System.nanoTime();
-        // long duration = endTime - startTime;
-        // System.out.println(
-        // "################# El tiempo de calcular dh fue: " + (duration / 5) + " nanosegundos");
     }
+
+    // public Simetricos() {
+    //     System.out.println("Thread " + Thread.currentThread().getId() + " comenzando calculo.");
+    //     long startTime = System.nanoTime();
+    //     for (int i = 0; i < 5; i++) {
+    //         String output = generarOutput();
+    //         // System.out.println(output);
+    //         String[] pg = getPG(output);
+    //         this.p = new BigInteger(pg[0], 16);
+    //         this.g = new BigInteger(pg[1], 16);
+    //         // System.out.println("P: " + p);
+    //         // System.out.println("G: " + g);
+    //         SecureRandom random = new SecureRandom();
+    //         this.x = new BigInteger(p.bitLength() - 1, random).add(BigInteger.ONE);
+    //         this.gx = g.modPow(x, p);
+    //     }
+    //     long endTime = System.nanoTime();
+    //     long duration = endTime - startTime;
+    //     System.out.println(
+    //             "################# El tiempo de calcular dh fue: " + (duration / 5) + " nanosegundos");
+    // }
 
     public static String generarOutput() {
         String outputString = "";
