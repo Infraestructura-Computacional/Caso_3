@@ -27,18 +27,23 @@ public class Main {
                System.out.println("Llaves generadas correctamente.");
           } else if (opcion == 2) {
                try {
-                    mainInstance.ejecutar(1,32);
-                    // mainInstance.ejecutar(2, 2);
-                    // mainInstance.ejecutar(4,1);
-                    // mainInstance.ejecutar(8,1);
-                    // mainInstance.ejecutar(32,1);
+                    System.out.println("Escenario 1: 1 Cliente, 32 Peticiones");
+                    System.out.println("Escenario 2: 4 Clientes, 1 Petición C/U");
+                    System.out.println("Escenario 3: 8 Clientes, 1 Petición C/U");
+                    System.out.println("Escenario 4: 32 Clientes, 1 Petición C/U");
+                    int escenario = scanner.nextInt();
+                    if (escenario == 1) mainInstance.ejecutar(1,32);
+                    else if (escenario == 2) mainInstance.ejecutar(4,1);
+                    else if (escenario == 3) mainInstance.ejecutar(8,1);
+                    else if (escenario == 4) mainInstance.ejecutar(32, 1);
+                    else System.out.println("Opción inválida. Por favor, digite 1, 2, 3 o 4");
                } catch (Exception e) {
                     e.printStackTrace();
                }
           } else if (opcion == 3) {
                System.out.println("Adiós :)");
           } else {
-               System.out.println("Opción inválida. Por favor, digite 1, 2 o 3.");
+               System.out.println("Opción inválida. Por favor, digite 1, 2 o 3");
           }
 
           scanner.close();
@@ -65,11 +70,11 @@ public class Main {
 
           // Esperar un momento para asegurarse de que el servidor esté listo antes de
           // iniciar los clientes
-          // try {
-          // Thread.sleep(500);
-          // } catch (InterruptedException e) {
-          // e.printStackTrace();
-          // }
+          try {
+          Thread.sleep(500);
+          } catch (InterruptedException e) {
+          e.printStackTrace();
+          }
 
           for (int i = 0; i < numClientes; i++) {
                int idCliente = i;
